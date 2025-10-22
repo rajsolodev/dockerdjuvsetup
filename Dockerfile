@@ -1,6 +1,7 @@
 # Use slim Python base for smaller image size
 FROM python:3.13-slim
 
+# This is for mysql 
 RUN apt-get update && apt-get install -y \
     pkg-config \
     default-libmysqlclient-dev \
