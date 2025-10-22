@@ -1,0 +1,49 @@
+services:
+  mysql_db:
+    container_name: mysql_con
+    image: mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=newdb
+      - MYSQL_USER=rajesh
+      - MYSQL_PASSWORD=Hello123456
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  phpmyadmin:
+    container_name: phpmyadmin_con
+    image: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql_db
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - mysql_db
+
+  django_project:
+    container_name: django_con
+    image: django-img
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ".env"
+    volumes:
+      - .:/dockerdjuvsetup
+    command: bash -c "uv run manage.py makemigrations && uv run manage.py migrate && uv run manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      mysql_db:
+        condition: service_healthy
